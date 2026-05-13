@@ -185,10 +185,13 @@ function ExternalFilesSection({id}: ExternalFilesSectionProps) {
     const checkFiles = async () => {
       const files: FileEntry[] = [];
       
+      // Get base path for GitHub Pages
+      const basePath = window.location.pathname.startsWith('/topola-viewer/') ? '/topola-viewer' : '';
+      
       // Try different photo extensions
       const photoExtensions = ['jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG'];
       for (const ext of photoExtensions) {
-        const photoUrl = `./photos/${id}.${ext}`;
+        const photoUrl = `${basePath}/photos/${id}.${ext}`;
         try {
           const response = await fetch(photoUrl, { method: 'HEAD' });
           if (response.ok) {
@@ -207,7 +210,7 @@ function ExternalFilesSection({id}: ExternalFilesSectionProps) {
       // Try different document extensions
       const docExtensions = ['pdf', 'PDF'];
       for (const ext of docExtensions) {
-        const docUrl = `./documents/${id}.${ext}`;
+        const docUrl = `${basePath}/documents/${id}.${ext}`;
         try {
           const response = await fetch(docUrl, { method: 'HEAD' });
           if (response.ok) {
