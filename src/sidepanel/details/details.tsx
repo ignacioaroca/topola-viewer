@@ -1,5 +1,7 @@
 import flatMap from 'array.prototype.flatmap';
 import {GedcomEntry} from 'parse-gedcom';
+import { useState } from 'react';
+import { findRelationship } from '../../relationship';
 import {FormattedMessage} from 'react-intl';
 import {Header, Item} from 'semantic-ui-react';
 import {
@@ -329,6 +331,67 @@ function getSectionForId(indi: string): React.ReactNode {
   );
 }
 
+function relationshipCalculator(
+  gedcom: GedcomData,
+  currentIndi: string,
+  compareId: string | null,
+  setCompareId: (id: string | null) => void,
+): React.ReactNode {
+  return (
+    <Item>
+      <Item.Content>
+        <div
+          style={{
+            background: '#f5f5f5',
+            padding: '15px',
+            marginTop: '15px',
+            borderRadius: '6px',
+            border: '1px solid #ddd',
+          }}
+        >
+          <Header as="h4" style={{ margin: '0 0 10px 0' }}>
+            🔢 Calculadora de Parentesco
+          </Header>
+          {!compareId ? (
+            <button
+              type="button"
+              onClick={() => setCompareId(currentIndi)}
+              style={{ padding: '6px 12px', cursor: 'pointer' }}
+            >
+              Fijar como Persona Base
+            </button>
+          ) : (
+            <div>
+              <p style={{ margin: '4px 0' }}>
+                <strong>Base:</strong> {compareId}
+              </p>
+              <p style={{ margin: '4px 0' }}>
+                <strong>Actual:</strong> {currentIndi}
+              </p>
+              <p
+                style={{
+                  margin: '10px 0 4px 0',
+                  color: '#0056b3',
+                  fontWeight: 'bold',
+                }}
+              >
+                Relación: {findRelationship(gedcom, compareId, currentIndi)}
+              </p>
+              <button
+                type="button"
+                onClick={() => setCompareId(null)}
+                style={{ marginTop: '5px', padding: '4px 8px' }}
+              >
+                🔄 Reiniciar
+              </button>
+            </div>
+          )}
+        </div>
+      </Item.Content>
+    </Item>
+  );
+}
+
 interface Props {
   gedcom: GedcomData;
   indi: string;
@@ -337,8 +400,10 @@ interface Props {
 
 export function Details(props: Props) {
   const entries = props.gedcom.indis[props.indi].tree;
+  const [compareId, setCompareId] = useState<string | null>(null);
 
   return (
+
     <div className="details">
       <Item.Group divided>
         {getSectionForEachMatchingEntry(
@@ -352,6 +417,12 @@ export function Details(props: Props) {
           props.gedcom,
           ['OBJE'],
           imageDetails,
+        )}
+        {relationshipCalculator(
+          props.gedcom,
+          props.indi,
+          compareId,
+          setCompareId,
         )}
         <Events gedcom={props.gedcom} entries={entries} indi={props.indi} />
         {props.config.id === Ids.SHOW ? getSectionForId(props.indi) : null}
