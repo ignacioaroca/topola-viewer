@@ -15,7 +15,7 @@ try {
 
 export default defineConfig({
   // depending on your application, base can also be "/"
-  base: '',
+  base: process.env.NODE_ENV === 'production' ? '/topola-viewer/' : '',
   define: {
     'import.meta.env.VITE_GIT_SHA': JSON.stringify(gitSha),
     'import.meta.env.VITE_GIT_TIME': JSON.stringify(gitTime),

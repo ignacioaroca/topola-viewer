@@ -188,7 +188,7 @@ function ExternalFilesSection({id}: ExternalFilesSectionProps) {
       // Try different photo extensions
       const photoExtensions = ['jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG'];
       for (const ext of photoExtensions) {
-        const photoUrl = `/photos/${id}.${ext}`;
+        const photoUrl = `./photos/${id}.${ext}`;
         try {
           const response = await fetch(photoUrl, { method: 'HEAD' });
           if (response.ok) {
@@ -207,7 +207,7 @@ function ExternalFilesSection({id}: ExternalFilesSectionProps) {
       // Try different document extensions
       const docExtensions = ['pdf', 'PDF'];
       for (const ext of docExtensions) {
-        const docUrl = `/documents/${id}.${ext}`;
+        const docUrl = `./documents/${id}.${ext}`;
         try {
           const response = await fetch(docUrl, { method: 'HEAD' });
           if (response.ok) {
@@ -272,7 +272,7 @@ function externalFilesDetails(id: string) {
   // Try different photo extensions
   const photoExtensions = ['jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG'];
   for (const ext of photoExtensions) {
-    const photoUrl = `/photos/${id}.${ext}`;
+    const photoUrl = `./photos/${id}.${ext}`;
     files.push({
       url: photoUrl,
       filename: `${id}.${ext}`,
@@ -283,7 +283,7 @@ function externalFilesDetails(id: string) {
   // Try different document extensions
   const docExtensions = ['pdf', 'PDF'];
   for (const ext of docExtensions) {
-    const docUrl = `/documents/${id}.${ext}`;
+    const docUrl = `./documents/${id}.${ext}`;
     files.push({
       url: docUrl,
       filename: `${id}.${ext}`,
