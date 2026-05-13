@@ -1,6 +1,6 @@
 import flatMap from 'array.prototype.flatmap';
 import {GedcomEntry} from 'parse-gedcom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { findRelationship } from '../../relationship';
 import {FormattedMessage} from 'react-intl';
 import {Header, Item} from 'semantic-ui-react';
@@ -169,6 +169,143 @@ function fileDetails(objectEntries: GedcomEntry[], gedcom: GedcomData) {
       </div>
       <AdditionalFiles files={files} />
     </>
+  );
+}
+
+interface ExternalFilesSectionProps {
+  id: string;
+}
+
+function ExternalFilesSection({id}: ExternalFilesSectionProps) {
+  const [validFiles, setValidFiles] = useState<FileEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    const checkFiles = async () => {
+      const files: FileEntry[] = [];
+      
+      // Try different photo extensions
+      const photoExtensions = ['jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG'];
+      for (const ext of photoExtensions) {
+        const photoUrl = `/photos/${id}.${ext}`;
+        try {
+          const response = await fetch(photoUrl, { method: 'HEAD' });
+          if (response.ok) {
+            files.push({
+              url: photoUrl,
+              filename: `${id}.${ext}`,
+              titl: 'Foto',
+            });
+            break; // Only add the first valid photo
+          }
+        } catch (error) {
+          // Continue to next extension
+        }
+      }
+      
+      // Try different document extensions
+      const docExtensions = ['pdf', 'PDF'];
+      for (const ext of docExtensions) {
+        const docUrl = `/documents/${id}.${ext}`;
+        try {
+          const response = await fetch(docUrl, { method: 'HEAD' });
+          if (response.ok) {
+            files.push({
+              url: docUrl,
+              filename: `${id}.${ext}`,
+              titl: 'Documento',
+            });
+            break; // Only add the first valid document
+          }
+        } catch (error) {
+          // Continue to next extension
+        }
+      }
+
+      setValidFiles(files);
+      setChecked(true);
+      setLoading(false);
+    };
+
+    checkFiles();
+  }, [id]);
+
+  if (loading) {
+    return null;
+  }
+
+  if (!checked || !validFiles.length) {
+    return (
+      <Item>
+        <Item.Content>
+          <div className="item-header">
+            <Header as="span" size="small">
+              Archivos Externos
+            </Header>
+          </div>
+          <p style={{ color: '#999', fontSize: '0.9em', marginTop: '8px' }}>
+            No hay archivos disponibles para este registro
+          </p>
+        </Item.Content>
+      </Item>
+    );
+  }
+
+  return (
+    <Item>
+      <Item.Content>
+        <div className="item-header">
+          <Header as="span" size="small">
+            Archivos Externos
+          </Header>
+        </div>
+        <AdditionalFiles files={validFiles} />
+      </Item.Content>
+    </Item>
+  );
+}
+
+function externalFilesDetails(id: string) {
+  const files: FileEntry[] = [];
+  
+  // Try different photo extensions
+  const photoExtensions = ['jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG'];
+  for (const ext of photoExtensions) {
+    const photoUrl = `/photos/${id}.${ext}`;
+    files.push({
+      url: photoUrl,
+      filename: `${id}.${ext}`,
+      titl: 'Foto',
+    });
+  }
+  
+  // Try different document extensions
+  const docExtensions = ['pdf', 'PDF'];
+  for (const ext of docExtensions) {
+    const docUrl = `/documents/${id}.${ext}`;
+    files.push({
+      url: docUrl,
+      filename: `${id}.${ext}`,
+      titl: 'Documento',
+    });
+  }
+
+  if (!files.length) {
+    return null;
+  }
+
+  return (
+    <Item>
+      <Item.Content>
+        <div className="item-header">
+          <Header as="span" size="small">
+            Archivos Externos
+          </Header>
+        </div>
+        <AdditionalFiles files={files} />
+      </Item.Content>
+    </Item>
   );
 }
 
@@ -451,6 +588,7 @@ export function Details(props: Props) {
           ['SOUR'],
           sourceDetails,
         )}
+        <ExternalFilesSection id={props.indi} />
       </Item.Group>
     </div>
   );

@@ -111,13 +111,35 @@ export async function loadFromUrl(
 
   const urlToFetch = handleCors ? 'https://topolaproxy.bieda.it/' + url : url;
 
-  const response = await window.fetch(urlToFetch);
-  if (response.status !== 200) {
-    throw new Error(response.statusText);
+  let response: Response;
+  try {
+    response = await window.fetch(urlToFetch);
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to fetch URL ${urlToFetch}. ${message}`,
+    );
   }
 
-  const {gedcom, images} = await loadFile(await response.blob());
-  return prepareData(gedcom, url, images);
+  if (response.status !== 200) {
+    throw new Error(
+      `Failed to load URL ${urlToFetch}. HTTP ${response.status} ${response.statusText}`,
+    );
+  }
+
+  let gedcomResult;
+  try {
+    gedcomResult = await loadFile(await response.blob());
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to read GEDCOM from URL ${urlToFetch}. ${message}`,
+    );
+  }
+
+  return prepareData(gedcomResult.gedcom, url, gedcomResult.images);
 }
 
 /** Loads data from the given GEDCOM file contents. */
