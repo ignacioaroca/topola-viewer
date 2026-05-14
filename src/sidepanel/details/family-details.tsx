@@ -13,20 +13,23 @@ interface Props {
 export function FamilyDetails(props: Props) {
   const location = useLocation();
   const search = queryString.parse(location.search);
-
   const familyEntry = props.gedcom.fams[props.fam];
+  
   if (!familyEntry) {
-    return <div>Familia no encontrada: {props.fam}</div>;
+    return <div className="details">Familia no encontrada: {props.fam}</div>;
   }
 
+  // Cónyuges
   const spouseRefs = familyEntry.tree.filter((entry) => ['WIFE', 'HUSB'].includes(entry.tag));
   const spouses = spouseRefs
     .map((reference) => dereference(reference, props.gedcom, (gedcom) => gedcom.indis))
     .filter((entry): entry is GedcomEntry => !!entry);
 
-  const children = familyEntry.tree
-    .filter((entry) => entry.tag === 'CHILD')
-    .map((entry) => pointerToId(entry.data));
+  // Hijos: Extraer IDs y limpiar arrobas
+  const childrenIds = familyEntry.tree
+    .filter((entry) => entry.tag === 'CHIL')
+    .map((entry) => (entry.data || '').replace(/@/g, '').trim())
+    .filter(id => id !== '');
 
   return (
     <div className="details">
@@ -34,18 +37,18 @@ export function FamilyDetails(props: Props) {
         <Item>
           <Item.Content>
             <Header as="h4">Familia {props.fam}</Header>
-            <List>
+            <List relaxed>
+              
               <List.Item>
                 <List.Header>Cónyuges</List.Header>
                 <List.List>
-                  {spouses.length ? (
+                  {spouses.length > 0 ? (
                     spouses.map((spouse) => {
                       const id = pointerToId(spouse.pointer);
-                      const spouseSearch = {...search, indi: id};
                       return (
                         <List.Item key={id}>
-                          <Link to={{pathname: '/view', search: queryString.stringify(spouseSearch)}}>
-                            {getName(spouse) || id}
+                          <Link to={{pathname: '/view', search: queryString.stringify({...search, indi: id})}}>
+                            <strong>{id}</strong> - {getName(spouse) || 'Sin nombre'}
                           </Link>
                         </List.Item>
                       );
@@ -55,27 +58,32 @@ export function FamilyDetails(props: Props) {
                   )}
                 </List.List>
               </List.Item>
-              <List.Item>
-                <List.Header>Hijos ({children.length})</List.Header>
+
+              <List.Item style={{ marginTop: '1em' }}>
+                <List.Header>Hijos ({childrenIds.length})</List.Header>
                 <List.List>
-                  {children.length ? (
-                    children.map((childId) => {
+                  {childrenIds.length > 0 ? (
+                    childrenIds.map((childId) => {
                       const child = props.gedcom.indis[childId];
-                      const childSearch = {...search, indi: childId};
                       const childName = child ? getName(child) : null;
                       return (
                         <List.Item key={childId}>
-                          <Link to={{pathname: '/view', search: queryString.stringify(childSearch)}}>
-                            {childName ? `${childId} - ${childName}` : childId}
+                          <Link to={{pathname: '/view', search: queryString.stringify({...search, indi: childId})}}>
+                            {childName ? (
+                              <>{childId} - <strong>{childName}</strong></>
+                            ) : (
+                              `ID: ${childId}`
+                            )}
                           </Link>
                         </List.Item>
                       );
                     })
                   ) : (
-                    <List.Item>No hay hijos definidos.</List.Item>
+                    <List.Item>No hay hijos registrados.</List.Item>
                   )}
                 </List.List>
               </List.Item>
+
             </List>
           </Item.Content>
         </Item>
