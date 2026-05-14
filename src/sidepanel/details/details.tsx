@@ -176,7 +176,7 @@ interface ExternalFilesSectionProps {
   id: string;
 }
 
-function ExternalFilesSection({id}: ExternalFilesSectionProps) {
+export function ExternalFilesSection({id}: ExternalFilesSectionProps) {
   const [validFiles, setValidFiles] = useState<FileEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [checked, setChecked] = useState(false);
@@ -248,7 +248,7 @@ function ExternalFilesSection({id}: ExternalFilesSectionProps) {
             </Header>
           </div>
           <p style={{ color: '#999', fontSize: '0.9em', marginTop: '8px' }}>
-            No hay archivos disponibles para este registro
+            No existe archivo disponible para este registro
           </p>
         </Item.Content>
       </Item>
